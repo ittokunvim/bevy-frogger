@@ -4,6 +4,8 @@ use bevy::{
     asset::AssetMetaCheck,
 };
 
+mod player;
+
 const GAMETITLE: &str = "いっとくフロッガー";
 const WINDOW_SIZE: Vec2 = Vec2::new(640.0, 480.0);
 const BACKGROUND_COLOR: Color = Color::srgb(0.0, 0.0, 0.0);
@@ -33,12 +35,13 @@ fn main() {
         )
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(Time::<Fixed>::from_seconds(1.0 / 60.0))
+        .add_plugins(player::PlayerPlugin)
         .add_systems(Startup, setup)
         .run();
 }
 
 fn setup(mut commands: Commands) {
     info_once!("setup");
-    debug!("spawn camera");
+
     commands.spawn(Camera2d::default());
 }
