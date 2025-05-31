@@ -8,6 +8,7 @@ const GAMETITLE: &str = "いっとくフロッガー";
 const WINDOW_SIZE: Vec2 = Vec2::new(640.0, 480.0);
 const BACKGROUND_COLOR: Color = Color::srgb(0.0, 0.0, 0.0);
 const LOG_FILTER: &str = "info,wgpu_core=warn,wgpu_hal=warn,ittoku_frogger=debug";
+const PATH_IMAGE_PLAYER: &str = "ittoku-frogger/player.png";
 
 fn main() {
     App::new()
