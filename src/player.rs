@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{f32, time::Duration};
 use bevy::prelude::*;
 
 use crate::{Direction, MoveEvent, PATH_IMAGE_PLAYER};
@@ -23,6 +23,8 @@ struct Velocity(Vec2);
 
 impl Player {
     const FPS: u8 = 4;
+    const SPEED: f32 = 32.0;
+    const DISTANCE: f32 = 32.0;
     const INDICES_LEFT: (usize, usize) = (8, 11);
     const INDICES_RIGHT: (usize, usize) = (16, 19);
     const INDICES_TOP: (usize, usize) = (24, 27);
@@ -131,6 +133,54 @@ fn player_change_animation(
     }
 }
 
+/// プレイヤーの移動を管理する関数
+fn player_movement(
+    mut events: EventReader<MoveEvent>,
+    mut query: Query<(&mut Transform, &mut Velocity), With<Player>>,
+) {
+    info_once!("player_movement");
+
+    // プレイヤーの値を取得。プレイヤーがなければ処理を抜ける
+    let Ok((mut transform, mut velocity)) = query.get_single_mut() else {
+        return;
+    };
+    let x = transform.translation.x;
+    let y = transform.translation.y;
+    let dist = Player::DISTANCE;
+
+    // x座標がDISTANCEの倍数付近なら丸めて停止
+    if (x % dist).abs() < 1.0 {
+        velocity.x = 0.0;
+        transform.translation.x = (x / dist).round() * dist;
+    }
+    // y座標がDISTANCEの倍数付近なら丸めて停止
+    if (y % dist).abs() < 1.0 {
+        velocity.y = 0.0;
+        transform.translation.y = (y / dist).round() * dist;
+    }
+
+    for event in events.read() {
+        match **event {
+            Direction::Left => {
+                transform.translation.x -= 1.0;
+                velocity.x = -Player::SPEED;
+            }
+            Direction::Right => {
+                transform.translation.x += 1.0;
+                velocity.x = Player::SPEED;
+            }
+            Direction::Top => {
+                transform.translation.y += 1.0;
+                velocity.y = Player::SPEED;
+            }
+            Direction::Bottom => {
+                transform.translation.y -= 1.0;
+                velocity.y = -Player::SPEED;
+            }
+        }
+    }
+}
+
 /// 速度に応じてコンポーネントを移動する関数
 fn apply_velocity(
     mut query: Query<(&mut Transform, &Velocity), With<Velocity>>,
@@ -153,6 +203,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(Update, (
                 player_animation,
                 player_change_animation,
+                player_movement,
                 apply_velocity,
             ))
         ;
