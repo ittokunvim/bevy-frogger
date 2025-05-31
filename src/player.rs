@@ -18,6 +18,9 @@ struct Player {
     frame_timer: Timer,
 }
 
+#[derive(Component, Debug, Deref, DerefMut)]
+struct Velocity(Vec2);
+
 impl Player {
     const FPS: u8 = 4;
     const INDICES_LEFT: (usize, usize) = (8, 11);
@@ -61,6 +64,7 @@ fn player_setup(
         ),
         Transform::from_scale(Vec3::splat(2.0)),
         Player::new(),
+        Velocity(Vec2::ZERO),
     ));
 }
 
@@ -91,7 +95,7 @@ fn player_change_animation(
     mut events: EventReader<MoveEvent>,
     mut query: Query<(&mut Player, &mut Sprite), With<Player>>,
 ) {
-    info_once!("player_movement");
+    info_once!("player_change_animation");
 
     // イベントを受け取ったら処理を実行
     for event in events.read() {
@@ -126,6 +130,20 @@ fn player_change_animation(
         };
     }
 }
+
+/// 速度に応じてコンポーネントを移動する関数
+fn apply_velocity(
+    mut query: Query<(&mut Transform, &Velocity), With<Velocity>>,
+    time_step: Res<Time<Fixed>>,
+) {
+    info_once!("apply_velocity");
+
+    for (mut transform, velocity) in &mut query {
+        transform.translation.x += velocity.x * time_step.delta().as_secs_f32();
+        transform.translation.y += velocity.y * time_step.delta().as_secs_f32();
+    }
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -135,6 +153,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(Update, (
                 player_animation,
                 player_change_animation,
+                apply_velocity,
             ))
         ;
     }
