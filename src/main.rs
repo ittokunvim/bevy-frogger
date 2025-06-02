@@ -6,6 +6,7 @@ use bevy::{
 
 mod key;
 mod player;
+mod map;
 
 const GAMETITLE: &str = "いっとくフロッガー";
 const WINDOW_SIZE: Vec2 = Vec2::new(640.0, 480.0);
@@ -52,6 +53,7 @@ fn main() {
         .add_systems(Startup, setup)
         .add_plugins(key::KeyPlugin)
         .add_plugins(player::PlayerPlugin)
+        .add_plugins(map::MapPlugin)
         .run();
 }
 
