@@ -25,6 +25,8 @@ impl Player {
     const FPS: u8 = 4;
     const SPEED: f32 = 32.0;
     const DISTANCE: f32 = 32.0;
+    const SCALE: f32 = 2.0;
+    const X_OFFSET: f32 = 16.0;
     const INDICES_LEFT: (usize, usize) = (8, 11);
     const INDICES_RIGHT: (usize, usize) = (16, 19);
     const INDICES_TOP: (usize, usize) = (24, 27);
@@ -41,6 +43,17 @@ impl Player {
             last_sprite_index,
             frame_timer,
         }
+    }
+
+    /// プレイヤー初期位置を返す関数
+    ///
+    /// # Returns
+    /// Vec3 - プレイヤーの初期位置
+    fn position() -> Vec3 {
+        let x = Self::X_OFFSET;
+        let y = -192.0;
+        let z = 99.0;
+        Vec3::new(x, y, z)
     }
 }
 
@@ -64,7 +77,11 @@ fn player_setup(
                 index: 0,
             },
         ),
-        Transform::from_scale(Vec3::splat(2.0)),
+        Transform {
+            translation: Player::position(),
+            scale: Vec3::splat(Player::SCALE),
+            ..Default::default()
+        },
         Player::new(),
         Velocity(Vec2::ZERO),
     ));
@@ -147,11 +164,12 @@ fn player_movement(
     let x = transform.translation.x;
     let y = transform.translation.y;
     let dist = Player::DISTANCE;
+    let x_offset = Player::X_OFFSET;
 
     // x座標がDISTANCEの倍数付近なら丸めて停止
-    if (x % dist).abs() < 1.0 {
+    if ((x - x_offset) % dist).abs() < 1.0 {
         velocity.x = 0.0;
-        transform.translation.x = (x / dist).round() * dist;
+        transform.translation.x = ((x - x_offset) / dist).round() * dist + x_offset;
     }
     // y座標がDISTANCEの倍数付近なら丸めて停止
     if (y % dist).abs() < 1.0 {
