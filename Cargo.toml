@@ -1,5 +1,5 @@
 [package]
-name = "ittoku-frogger"
+name = "ittoku_frogger"
 version = "0.1.0"
 edition = "2021"
 
