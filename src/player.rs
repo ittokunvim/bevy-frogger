@@ -1,5 +1,5 @@
-use std::{f32, time::Duration};
 use bevy::prelude::*;
+use std::{f32, time::Duration};
 
 use crate::{Direction, MoveEvent, PATH_IMAGE_PLAYER};
 
@@ -58,7 +58,7 @@ fn player_setup(
 
     commands.spawn((
         Sprite::from_atlas_image(
-            texture, 
+            texture,
             TextureAtlas {
                 layout: texture_atlas_layout,
                 index: 0,
@@ -71,10 +71,7 @@ fn player_setup(
 }
 
 /// プレイヤーをアニメーションするための関数
-fn player_animation(
-    mut query: Query<(&mut Player, &mut Sprite), With<Player>>,
-    time: Res<Time>,
-) {
+fn player_animation(mut query: Query<(&mut Player, &mut Sprite), With<Player>>, time: Res<Time>) {
     info_once!("player_animate");
 
     for (mut player, mut sprite) in &mut query {
@@ -94,56 +91,51 @@ fn player_animation(
 
 /// イベントを受け取り、プレイヤーのアニメーションの振る舞いを決める関数
 fn player_change_animation(
-    mut events: EventReader<MoveEvent>,
+    moved: On<MoveEvent>,
     mut query: Query<(&mut Player, &mut Sprite), With<Player>>,
-) {
+) -> Result {
     info_once!("player_change_animation");
 
-    // イベントを受け取ったら処理を実行
-    for event in events.read() {
-        // プレイヤーの値を取得。プレイヤーがなければ処理を抜ける
-        let Ok((mut player, mut sprite)) = query.get_single_mut() else {
-            return;
-        };
+    // プレイヤーの値を取得。プレイヤーがなければ処理を抜ける
+    let (mut player, mut sprite) = query.single_mut()?;
 
-        // アニメーションのインデックスを更新
-        match **event {
-            Direction::Left => {
-                player.first_sprite_index = Player::INDICES_LEFT.0;
-                player.last_sprite_index = Player::INDICES_LEFT.1;
-            }
-            Direction::Right => {
-                player.first_sprite_index = Player::INDICES_RIGHT.0;
-                player.last_sprite_index = Player::INDICES_RIGHT.1;
-            }
-            Direction::Top => {
-                player.first_sprite_index = Player::INDICES_TOP.0;
-                player.last_sprite_index = Player::INDICES_TOP.1;
-            }
-            Direction::Bottom => {
-                player.first_sprite_index = Player::INDICES_BOTTOM.0;
-                player.last_sprite_index = Player::INDICES_BOTTOM.1;
-            }
+    // アニメーションのインデックスを更新
+    match **moved {
+        Direction::Left => {
+            player.first_sprite_index = Player::INDICES_LEFT.0;
+            player.last_sprite_index = Player::INDICES_LEFT.1;
         }
-
-        // スプライトのインデックスを更新
-        if let Some(atlas) = &mut sprite.texture_atlas {
-            atlas.index = player.first_sprite_index;
-        };
+        Direction::Right => {
+            player.first_sprite_index = Player::INDICES_RIGHT.0;
+            player.last_sprite_index = Player::INDICES_RIGHT.1;
+        }
+        Direction::Top => {
+            player.first_sprite_index = Player::INDICES_TOP.0;
+            player.last_sprite_index = Player::INDICES_TOP.1;
+        }
+        Direction::Bottom => {
+            player.first_sprite_index = Player::INDICES_BOTTOM.0;
+            player.last_sprite_index = Player::INDICES_BOTTOM.1;
+        }
     }
+
+    // スプライトのインデックスを更新
+    if let Some(atlas) = &mut sprite.texture_atlas {
+        atlas.index = player.first_sprite_index;
+    };
+
+    Ok(())
 }
 
 /// プレイヤーの移動を管理する関数
 fn player_movement(
-    mut events: EventReader<MoveEvent>,
+    moved: On<MoveEvent>,
     mut query: Query<(&mut Transform, &mut Velocity), With<Player>>,
-) {
+) -> Result {
     info_once!("player_movement");
 
     // プレイヤーの値を取得。プレイヤーがなければ処理を抜ける
-    let Ok((mut transform, mut velocity)) = query.get_single_mut() else {
-        return;
-    };
+    let (mut transform, mut velocity) = query.single_mut()?;
     let x = transform.translation.x;
     let y = transform.translation.y;
     let dist = Player::DISTANCE;
@@ -159,26 +151,26 @@ fn player_movement(
         transform.translation.y = (y / dist).round() * dist;
     }
 
-    for event in events.read() {
-        match **event {
-            Direction::Left => {
-                transform.translation.x -= 1.0;
-                velocity.x = -Player::SPEED;
-            }
-            Direction::Right => {
-                transform.translation.x += 1.0;
-                velocity.x = Player::SPEED;
-            }
-            Direction::Top => {
-                transform.translation.y += 1.0;
-                velocity.y = Player::SPEED;
-            }
-            Direction::Bottom => {
-                transform.translation.y -= 1.0;
-                velocity.y = -Player::SPEED;
-            }
+    match **moved {
+        Direction::Left => {
+            transform.translation.x -= 1.0;
+            velocity.x = -Player::SPEED;
+        }
+        Direction::Right => {
+            transform.translation.x += 1.0;
+            velocity.x = Player::SPEED;
+        }
+        Direction::Top => {
+            transform.translation.y += 1.0;
+            velocity.y = Player::SPEED;
+        }
+        Direction::Bottom => {
+            transform.translation.y -= 1.0;
+            velocity.y = -Player::SPEED;
         }
     }
+
+    Ok(())
 }
 
 /// 速度に応じてコンポーネントを移動する関数
@@ -198,14 +190,9 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Startup, player_setup)
-            .add_systems(Update, (
-                player_animation,
-                player_change_animation,
-                player_movement,
-                apply_velocity,
-            ))
-        ;
+        app.add_systems(Startup, player_setup)
+            .add_systems(Update, (player_animation, apply_velocity))
+            .add_observer(player_change_animation)
+            .add_observer(player_movement);
     }
 }
