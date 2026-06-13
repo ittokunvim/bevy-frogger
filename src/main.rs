@@ -7,7 +7,10 @@ const GAMETITLE: &str = "いっとくフロッガー";
 const WINDOW_SIZE: Vec2 = Vec2::new(640.0, 480.0);
 const BACKGROUND_COLOR: Color = Color::srgb(0.0, 0.0, 0.0);
 const LOG_FILTER: &str = "info,wgpu_core=warn,wgpu_hal=warn,ittoku_frogger=debug";
-const PATH_IMAGE_PLAYER: &str = "ittoku-frogger/player.png";
+const PATH_IMAGE_FROGGER: &str = "ittoku-frogger/frogger.png";
+const IMAGE_FROGGER_SIZE: UVec2 = UVec2::splat(16);
+const IMAGE_FROGGER_COLUMN: u32 = 7;
+const IMAGE_FROGGER_ROW: u32 = 7;
 
 #[derive(Event, Deref, DerefMut)]
 struct MoveEvent(Direction);
