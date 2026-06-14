@@ -1,6 +1,7 @@
 use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*, window::WindowResolution};
 
 mod key;
+mod map;
 mod player;
 
 const GAMETITLE: &str = "いっとくフロッガー";
@@ -51,6 +52,7 @@ fn main() {
         .insert_resource(Time::<Fixed>::from_seconds(1.0 / 60.0))
         .add_systems(Startup, setup)
         .add_plugins(key::KeyPlugin)
+        .add_plugins(map::MapPlugin)
         .add_plugins(player::PlayerPlugin)
         .run();
 }
