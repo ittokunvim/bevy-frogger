@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use std::{f32, time::Duration};
 
 use crate::{
-    Direction, MoveEvent, IMAGE_FROGGER_COLUMN, IMAGE_FROGGER_ROW, IMAGE_FROGGER_SIZE,
-    PATH_IMAGE_FROGGER,
+    Direction, MoveEvent, BLOCK_SIZE, IMAGE_FROGGER_COLUMN, IMAGE_FROGGER_ROW, IMAGE_FROGGER_SIZE,
+    INITIAL_POSITION, PATH_IMAGE_FROGGER,
 };
 
 /// プレイヤーが操作をするコンポーネント
@@ -24,8 +24,8 @@ struct Velocity(Vec2);
 
 impl Player {
     const FPS: u8 = 2;
-    const SPEED: f32 = 16.0;
-    const DISTANCE: f32 = 16.0;
+    const SPEED: f32 = BLOCK_SIZE;
+    const DISTANCE: f32 = BLOCK_SIZE;
     const IDLE_INDICES: (usize, usize) = (0, 0);
     const MOVE_INDICES: (usize, usize) = (1, 2);
 
@@ -76,7 +76,7 @@ fn player_setup(
                 index: 0,
             },
         ),
-        Transform::from_scale(Vec3::splat(2.0)),
+        Transform::from_translation(INITIAL_POSITION.extend(99.0)),
         Player::new(),
         Velocity(Vec2::ZERO),
     ));
