@@ -6,6 +6,12 @@ use crate::{
     INITIAL_POSITION, PATH_IMAGE_FROGGER,
 };
 
+const POSITION: Vec3 = Vec3::new(
+    INITIAL_POSITION.x + BLOCK_SIZE * 7.0,
+    INITIAL_POSITION.y - BLOCK_SIZE * 16.0,
+    99.0,
+);
+
 /// プレイヤーが操作をするコンポーネント
 /// - first_sprite_index: アニメーションの最初のインデックス
 #[derive(Component, Debug)]
@@ -76,7 +82,7 @@ fn player_setup(
                 index: 0,
             },
         ),
-        Transform::from_translation(INITIAL_POSITION.extend(99.0)),
+        Transform::from_translation(POSITION),
         Player::new(),
         Velocity(Vec2::ZERO),
     ));
